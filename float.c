@@ -222,7 +222,7 @@ sdouble(double x)
   xprintf(p[5], 2, anyon(p, 5)); xprintf(p[4], 2, anyon(p, 4));
   xprintf(p[3], 2, anyon(p, 3)); xprintf(p[2], 2, anyon(p, 2));
   xprintf(p[1], 2, anyon(p, 1)); xprintf(p[0], 2, 0);
-  printf("*2^%d", exp - 0x3ff);
+  printf("*2^%d", exp);
 }
 
 
