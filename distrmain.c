@@ -30,7 +30,7 @@ main(int argc, char *argv[])
     int iterations;
     struct timeval tv;
     extern char *optarg;
-    extern int optind, optreset;
+    extern int optind;
     char *cmdname;			/* name of command */
     char *distname;			/* name of distribution invoked */
     void *x;
@@ -39,7 +39,6 @@ main(int argc, char *argv[])
 
     sflag = 0;
 
-    optreset = 1;
     optind = 1;
     iterations = 1;
 
