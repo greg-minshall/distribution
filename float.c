@@ -6,17 +6,6 @@
 #include <machine/float.h>
 
 
-void
-xdouble(double x)
-{
-  int i;
-  unsigned char *p = (unsigned char *)&x;
-
-  for (i = 0; i < 8; i++) {
-    printf("%02x", p[i]);
-  }
-}
-
 double
 doublex(char *x)
 {
@@ -169,6 +158,47 @@ bcdprint(unsigned char bcd[BCDSIZE])
   if (force == 0) {
     printf("0");
   }
+}
+void
+xdouble(double x)
+{
+  unsigned char *p = (unsigned char *)&x;
+  int sign, exp, i, zeroes;
+
+  if ((p[7]&0x80) != 0) {
+    sign = 1;
+  } else {
+    sign = 0;
+  }
+
+  exp = ((p[7]&0x7f)<<4) | ((p[6]&0xf0)>>4);
+  exp -= 0x3ff;
+
+  printf("%c/%d/0x1.", sign? '-' : '+', exp);
+
+  printf("%1x", p[6]&0x0f);
+  zeroes = 0;
+  for (i = 5; i >= 0; i--) {
+    if (p[i]&0xf0) {
+      while (zeroes--) {
+	printf("0");
+      }
+      zeroes = 0;
+      printf("%1x", (p[i]&0xf0)>>4);
+    } else {
+      zeroes++;
+    }
+    if (p[i]&0x0f) {
+      while (zeroes--) {
+	printf("0");
+      }
+      zeroes = 0;
+      printf("%1x", p[i]&0x0f);
+    } else {
+      zeroes++;
+    }
+  }
+  printf("\n");
 }
 
 
