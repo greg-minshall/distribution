@@ -7,12 +7,15 @@
 #define  NUM(a)  (sizeof (a)/(sizeof (a)[0]))
 #define  LAST(a) (&((a)[NUM(a)-1]))
 
+#define  pi() M_PI
+
 
 typedef int (*distproc_t)(int argc, char *argv[]);
 
 
 int exponential(int argc, char *argv[]);
 int geometric(int argc, char *argv[]);
+int normal(int argc, char *argv[]);
 
 struct distributions {
   distproc_t proc;
@@ -21,6 +24,7 @@ struct distributions {
 } distributions[] = {
   { exponential, "exponential", "[MEAN (1.0)]" },
   { geometric, "geometric", "[PROBABILITY (0.5)]" },
+  { normal, "normal", "[MEAN (0.0)] [STDDEV (1.0)" },
 };
 
 int iterations;			/* number of iterations */
@@ -111,6 +115,40 @@ geometric(int argc, char *argv[])
   return 0;
 }
 
+
+int
+normal(int argc, char *argv[])
+{
+  double mean, stddev, ans;
+
+  mean = 0.0;
+  stddev = 1.0;
+
+  if (argc) {
+    mean = atof(argv[0]);
+    if (argc > 1) {
+      stddev = atof(argv[1]);
+      if (stddev <= 0) {
+	fprintf(stderr, "invalid standard deviation %g; must be > 0\n",
+		stddev);
+      }
+      if (argc > 2) {
+	fprintf(stderr, "too many parameters to normal\n");
+	return 1;
+      }
+    }
+  }
+
+  while (iterations--) {
+    ans = sqrt(-2*log(unitrectangular())) * sin(2*pi()*unitrectangular());
+    ans = (stddev * ans) + mean;
+    printf("%g\n", ans);
+  }
+
+  return 0;
+}
+					      
+    
 
 
 
