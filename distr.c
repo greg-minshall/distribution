@@ -129,7 +129,8 @@ static int exponential(distr_p distr,
     if (argc > 1) {
         if (getdouble(argv[1], &b)) {
             fprintf(stderr,
-                  "%s: invalid mean ``%s''; must be a floating point number\n",
+                    "%s: invalid mean ``%s''; "
+                    "must be a floating point number\n",
                     argv[0], argv[1]);
             return 1;
         }
@@ -161,16 +162,24 @@ static int geometric(distr_p distr,
 
     p = 0.5;
 
-    if (argc > 0) {
-        p = atof(argv[0]);
+    if (argc > 1) {
+        if (getdouble(argv[1], &p)) {
+            fprintf(stderr,
+                    "%s: invalid value ``%s'' for p; "
+                    "must be a floating point number\n",
+                    argv[0], argv[1]);
+            return 1;
+        }
         if ((p < 0) || (p > 1.0)) {
-            fprintf(stderr, "invalid value %g for p; must be 1.0 >= p >= 0\n", p);
+            fprintf(stderr,
+                    "%s: invalid value %g for p; must be 0 <= p <= 1.0\n",
+                    argv[0], p);
             return 1;
         }
     }
 
-    if (argc > 1) {
-        fprintf(stderr, "too many parameters to geometric\n");
+    if (argc > 2) {
+        fprintf(stderr, "%s: too many parameters\n", argv[0]);
         return 1;
     }
 
@@ -195,19 +204,33 @@ static int normal(distr_p distr,
     mean = 0.0;
     stddev = 1.0;
 
-    if (argc) {
-        mean = atof(argv[0]);
-        if (argc > 1) {
-            stddev = atof(argv[1]);
-            if (stddev <= 0) {
-                fprintf(stderr, "invalid standard deviation %g; must be > 0\n",
-                        stddev);
-            }
-            if (argc > 2) {
-                fprintf(stderr, "too many parameters to normal\n");
-                return 1;
-            }
+    if (argc > 1) {
+        if (getdouble(argv[1], &mean)) {
+            fprintf(stderr,
+                    "%s: invalid mean ``%s''; "
+                    "must be a floating point number\n",
+                    argv[0], argv[1]);
+            return 1;
         }
+    }
+    if (argc > 2) {
+        if (getdouble(argv[2], &stddev)) {
+            fprintf(stderr,
+                    "%s: invalid stddev ``%s''; "
+                    "must be a floating point number\n",
+                    argv[0], argv[2]);
+            return 1;
+        }
+        if (stddev <= 0) {
+            fprintf(stderr, "%s: invalid standard deviation %g; must be > 0\n",
+                    argv[0], stddev);
+            return 1;
+        }
+    }
+    
+    if (argc > 3) {
+        fprintf(stderr, "%s: too many parameters\n", argv[0]);
+        return 1;
     }
 
     while (iterations--) {
@@ -229,23 +252,37 @@ static int pareto(distr_p distr,
     a = 1;
     c = 1;
 
-    if (argc) {
-        a = atof(argv[0]);
-        if (a <= 0) {
-            fprintf(stderr, "invalid location %g; must be > 0\n", a);
+    if (argc > 1) {
+        if (getdouble(argv[1], &a)) {
+            fprintf(stderr,
+                    "%s: invalid location ``%s''; "
+                    "must be a floating point number\n",
+                    argv[0], argv[1]);
             return 1;
         }
-        if (argc > 1) {
-            c = atof(argv[1]);
-            if (c <= 0) {
-                fprintf(stderr, "invalid shape %g; must be > 0\n", c);
-                return 1;
-            }
-            if (argc > 2) {
-                fprintf(stderr, "too many parameters for pareto\n");
-                return 1;
-            }
+        if (a <= 0) {
+            fprintf(stderr, "%s: invalid location %g; must be > 0\n",
+                    argv[0], a);
+            return 1;
         }
+    }
+    if (argc > 2) {
+        if (getdouble(argv[2], &c)) {
+            fprintf(stderr,
+                    "%s: invalid shape ``%s''; "
+                    "must be a floating point number\n",
+                    argv[0], argv[2]);
+            return 1;
+        }
+        if (c <= 0) {
+            fprintf(stderr, "%s: invalid shape %g; must be > 0\n",
+                    argv[0], c);
+            return 1;
+        }
+    }
+    if (argc > 3) {
+        fprintf(stderr, "%s: too many parameters\n", argv[0]);
+        return 1;
     }
 
     crecip = 1/c;
@@ -268,16 +305,23 @@ static int poisson(distr_p distr,
 
     lambda = 1.0;
 
-    if (argc) {
-        lambda = atof(argv[0]);
+    if (argc > 1) {
+        if (getdouble(argv[1], &lambda)) {
+            fprintf(stderr,
+                    "%s: invalid mean ``%s''; "
+                    "must be a floating point number\n",
+                    argv[0], argv[1]);
+            return 1;
+        }
         if (lambda <= 0) {
-            fprintf(stderr, "invalid mean %g; must be > 0\n", lambda);
+            fprintf(stderr, "%s: invalid mean %g; must be > 0\n",
+                    argv[0], lambda);
             return 1;
         }
-        if (argc > 1) {
-            fprintf(stderr, "too many parameters for poisson\n");
+    }
+    if (argc > 2) {
+            fprintf(stderr, "%s: too many parameters\n", argv[0]);
             return 1;
-        }
     }
 
     while (iterations--) {
@@ -312,17 +356,30 @@ static int uniform(distr_p distr,
     a = 0.0;
     b = 1.0;
 
-    if (argc > 0) {
-        if (argc != 2) {
+    if (argc != 1) {
+        if (argc != 3) {
             fprintf(stderr,
-                    "uniform must have no parameters or exactly two parameters\n");
+                    "%s: must have no parameters or exactly two parameters\n",
+                    argv[0]);
             return 1;
         }
-        a = atof(argv[0]);
-        b = atof(argv[1]);
+        if (getdouble(argv[1], &a)) {
+            fprintf(stderr,
+                    "%s: invalid LOWER ``%s''; "
+                    "must be a floating point number\n",
+                    argv[0], argv[1]);
+            return 1;
+        }
+        if (getdouble(argv[2], &b)) {
+            fprintf(stderr,
+                 "%s: invalid UPPER ``%s''; must be a floating point number\n",
+                    argv[0], argv[2]);
+            return 1;
+        }
         if (b <= a) {
-            fprintf(stderr, "invalid LOWER %g UPPER %g; must be LOWER < UPPER\n",
-                    a, b);
+            fprintf(stderr,
+                    "%s: invalid LOWER %g UPPER %g; must be LOWER < UPPER\n",
+                    argv[0], a, b);
             return 1;
         }
     }
