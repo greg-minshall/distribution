@@ -154,7 +154,7 @@ normal(int argc, char *argv[])
 int
 pareto(int argc, char *argv[])
 {
-  double a, c, ans;
+  double a, c, crecip, ans;
 
   a = 1;
   c = 1;
@@ -178,8 +178,10 @@ pareto(int argc, char *argv[])
     }
   }
 
+  crecip = 1/c;
+
   while (iterations--) {
-    ans = a * pow(1.0-unitrectangular(), -1/c);
+    ans = a * pow(1.0-unitrectangular(), -crecip);
     printf("%g\n", ans);
   }
 
