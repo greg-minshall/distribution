@@ -17,6 +17,7 @@ int exponential(int argc, char *argv[]);
 int geometric(int argc, char *argv[]);
 int normal(int argc, char *argv[]);
 int pareto(int argc, char *argv[]);
+int poisson(int argc, char *argv[]);
 
 struct distributions {
   distproc_t proc;
@@ -27,6 +28,7 @@ struct distributions {
   { geometric, "geometric", "[PROBABILITY (0.5)]" },
   { normal, "normal", "[MEAN (0.0)] [STDDEV (1.0)" },
   { pareto, "pareto", "[LOCATION (1.0)] [SHAPE (1.0)]" },
+  { poisson, "poisson", "[MEAN (1.0)]" },
 };
 
 int iterations;			/* number of iterations */
@@ -187,6 +189,50 @@ pareto(int argc, char *argv[])
 
   return 0;
 }
+
+
+int
+poisson(int argc, char *argv[])
+{
+  double lambda, r, partial, sum;
+  int i;
+
+  lambda = 1.0;
+
+  if (argc) {
+    lambda = atof(argv[0]);
+    if (lambda <= 0) {
+      fprintf(stderr, "invalid mean %g; must be > 0\n", lambda);
+      return 1;
+    }
+    if (argc > 1) {
+      fprintf(stderr, "too many parameters for poisson\n");
+      return 1;
+    }
+  }
+
+  while (iterations--) {
+    r = unitrectangular();
+    partial = exp(-lambda);
+    sum = partial;
+    if (r < sum) {
+      printf("0\n");
+      continue;
+    }
+    i = 0;
+    while (1) {
+      i++;
+      partial = (lambda * partial) / i;
+      sum = sum+partial;
+      if (r < sum) {
+	printf("%d\n", i);
+	break;
+      }
+    }
+  }
+  return 0;
+}
+
 
 
 /**********************
