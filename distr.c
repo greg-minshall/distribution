@@ -4,41 +4,130 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define  NUM(a)  (sizeof (a)/(sizeof (a)[0]))
+#define  LAST(a) (&((a)[NUM(a)-1]))
+
+
+typedef int (*distproc_t)(int argc, char *argv[]);
+
+
+int exponential(int argc, char *argv[]);
+int geometric(int argc, char *argv[]);
+
+struct distributions {
+  distproc_t proc;
+  char *distname;
+  char *usage;
+} distributions[] = {
+  { exponential, "exponential", "[MEAN (1.0)]" },
+  { geometric, "geometric", "[PROBABILITY (0.5)]" },
+};
 
 int iterations;			/* number of iterations */
 char *cmdname,			/* name of command */
      *distname;			/* name of distribution invoked */
 
+/********************
+ * Utility routines *
+ ********************/
+
+double
+unitrectangular(void)
+{
+  long lr;
+  double r;
+
+  lr = random();
+  if (lr) {
+    r = (lr*1.0)/(0x7fffffff-1.0);
+  } else {
+    r = 0.0;
+  }
+  return r;
+}
+
+
+/*****************
+ * Distributions *
+ *****************/
+
 
 int
 exponential(int argc, char *argv[])
 {
-  double r, ans, b;
-  long lr;
+  double ans, b;
 
   b = 1.0;
 
   if (argc > 0) {
     b = atof(argv[0]);
+    if (b < 0) {
+      fprintf(stderr, "invalid mean %g; must be >= 0\n", b);
+      return 1;
+    }
+  }
+
+  if (argc > 1) {
+    fprintf(stderr, "too many arguments to exponential\n");
+    return 1;
   }
 
   while (iterations--) {
-    lr = random();
-    if (lr) {
-      r = (lr*1.0)/(0x7fffffff-1.0);
-    }
-    ans = - ( b * log(r) );
+    ans = - ( b * log(unitrectangular()) );
     printf("%g\n", ans);
   }
 
   return 0;
 }
 
+int
+geometric(int argc, char *argv[])
+{
+  double ans, p, log1mp;
+
+  p = 0.5;
+
+  if (argc > 0) {
+    p = atof(argv[0]);
+    if ((p < 0) || (p > 1.0)) {
+      fprintf(stderr, "invalid value %g for p; must be 1.0 >= p >= 0\n", p);
+      return 1;
+    }
+  }
+
+  if (argc > 1) {
+    fprintf(stderr, "too many parameters to geometric\n");
+    return 1;
+  }
+
+  log1mp = log(1-p);
+
+  while (iterations--) {
+    ans = (log(unitrectangular())/log1mp)-1;
+    ans = ceil(ans);
+    printf("%g\n", ans);
+  }
+
+  return 0;
+}
+
+
+
+
+/**********************
+ * Overhead routines  *
+ **********************/
+
 static void
 help(void)
 {
+  struct distributions *dist;
+
   fprintf(stderr, "Distributions:\n");
-  fprintf(stderr, "\texponential [MEAN (1)]\n");
+
+  for (dist = distributions; dist <= LAST(distributions); dist++) {
+    fprintf(stderr, "\t%s %s\n", dist->distname, dist->usage);
+  }
   exit(1);
 }
 
@@ -58,6 +147,7 @@ main(int argc, char *argv[])
   int opt;
   int sflag;
   unsigned soption;
+  struct distributions *dist;
   struct timeval tv;
   extern char *optarg;
   extern int optind, optreset;
@@ -111,12 +201,14 @@ main(int argc, char *argv[])
   argc--;
   argv++;
 
-  if (!strcmp(distname, "exponential")) {
-    return exponential(argc, argv);
-  } else {
-    fprintf(stderr, "unknown distribution \"%s\"\n", distname);
-    usage();
-    /*NOTREACHED*/
+  for (dist = distributions; dist <= LAST(distributions); dist++) {
+    if (!strcmp(distname, dist->distname)) {
+      return dist->proc(argc, argv);
+    }
   }
+
+  fprintf(stderr, "unknown distribution \"%s\"\n", distname);
+  usage();
+  /*NOTREACHED*/
   return 0;
 }
