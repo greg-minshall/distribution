@@ -16,6 +16,7 @@ typedef int (*distproc_t)(int argc, char *argv[]);
 int exponential(int argc, char *argv[]);
 int geometric(int argc, char *argv[]);
 int normal(int argc, char *argv[]);
+int pareto(int argc, char *argv[]);
 
 struct distributions {
   distproc_t proc;
@@ -25,6 +26,7 @@ struct distributions {
   { exponential, "exponential", "[MEAN (1.0)]" },
   { geometric, "geometric", "[PROBABILITY (0.5)]" },
   { normal, "normal", "[MEAN (0.0)] [STDDEV (1.0)" },
+  { pareto, "pareto", "[LOCATION (1.0)] [SHAPE (1.0)]" },
 };
 
 int iterations;			/* number of iterations */
@@ -149,7 +151,40 @@ normal(int argc, char *argv[])
 }
 					      
     
+int
+pareto(int argc, char *argv[])
+{
+  double a, c, ans;
 
+  a = 1;
+  c = 1;
+
+  if (argc) {
+    a = atof(argv[0]);
+    if (a <= 0) {
+      fprintf(stderr, "invalid location %g; must be > 0\n", a);
+      return 1;
+    }
+    if (argc > 1) {
+      c = atof(argv[1]);
+      if (c <= 0) {
+	fprintf(stderr, "invalid shape %g; must be > 0\n", c);
+	return 1;
+      }
+      if (argc > 2) {
+	fprintf(stderr, "too many parameters for pareto\n");
+	return 1;
+      }
+    }
+  }
+
+  while (iterations--) {
+    ans = a * pow(1.0-unitrectangular(), -1/c);
+    printf("%g\n", ans);
+  }
+
+  return 0;
+}
 
 
 /**********************
