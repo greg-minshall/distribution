@@ -148,7 +148,7 @@ static int exponential(distr_p distr,
 
     while (iterations--) {
         ans = - ( b * log(unitrectangular()) );
-        printf("%g\n", ans);
+        valuecb(cookie, ans);
     }
 
     return 0;
@@ -188,7 +188,7 @@ static int geometric(distr_p distr,
     while (iterations--) {
         ans = (log(unitrectangular())/log1mp)-1;
         ans = ceil(ans);
-        printf("%g\n", ans);
+        valuecb(cookie, ans);
     }
 
     return 0;
@@ -236,7 +236,7 @@ static int normal(distr_p distr,
     while (iterations--) {
         ans = sqrt(-2*log(unitrectangular())) * sin(2*pi()*unitrectangular());
         ans = (stddev * ans) + mean;
-        printf("%g\n", ans);
+        valuecb(cookie, ans);
     }
 
     return 0;
@@ -289,7 +289,7 @@ static int pareto(distr_p distr,
 
     while (iterations--) {
         ans = a * pow(1.0-unitrectangular(), -crecip);
-        printf("%g\n", ans);
+        valuecb(cookie, ans);
     }
 
     return 0;
@@ -329,7 +329,7 @@ static int poisson(distr_p distr,
         partial = exp(-lambda);
         sum = partial;
         if (r < sum) {
-            printf("0\n");
+            valuecb(cookie, 0.0);
             continue;
         }
         i = 0;
@@ -338,7 +338,7 @@ static int poisson(distr_p distr,
             partial = (lambda * partial) / i;
             sum = sum+partial;
             if (r < sum) {
-                printf("%d\n", i);
+                valuecb(cookie, i*1.0);
                 break;
             }
         }
@@ -387,7 +387,7 @@ static int uniform(distr_p distr,
     len = b-a;
     while (iterations--) {
         ans = a + (len*unitrectangular());
-        printf("%g\n", ans);
+        valuecb(cookie, ans);
     }
 
     return 0;
