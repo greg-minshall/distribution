@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <machine/float.h>
 
 
 void
@@ -76,11 +78,106 @@ anyon(unsigned char *p, int num)
   return 0;
 }
 
+#define BCNSIZE  (DBL_MANT_DIG/4)
+#define BCNLAST  (BCNSIZE-1)
+void
+char2bcn(unsigned char *p, unsigned char bcn[BCNSIZE])
+{
+  int i, j;
+
+  i = BCNLAST;
+
+  for (j = 0; j <= 5; j++) {
+    bcn[i--] = p[j]&0x0f;
+    bcn[i--] = (p[j]&0xf0)>>4;
+  }
+
+  bcn[i] = p[6]&0x0f;
+}
+
+
+int
+bcnbit(unsigned char bcn[BCNSIZE], int bit)
+{
+  return (bcn[bit/4]&(0x8>> (bit%4))) != 0;
+}
+
+#define BCDSIZE DBL_MANT_DIG
+#define BCDLAST (BCDSIZE-1)
+
+void
+bcdfixup(unsigned char bcd[BCDSIZE])
+{
+  int j, tmp;
+
+  j = BCDLAST;
+
+  while (j >= 0) {
+    if (bcd[j] >= 10) {
+      if (j <= 1) {
+	abort();
+      }
+      tmp = bcd[j];
+      bcd[j] = tmp - ((tmp/10)*10);
+      bcd[j-1] += (tmp-bcd[j])/10;
+    }
+    j--;
+  }
+}
+
+void
+bcn2bcd(unsigned char bcn[BCNSIZE], unsigned char bcd[BCDSIZE])
+{
+  int i, j;
+
+  for (i = BCNLAST, j = BCDLAST; i >= 0; i--, j--) {
+    bcd[j] = bcn[i];
+  }
+}
+    
+
+
+void
+bcdadd(unsigned char bcd[BCDSIZE], int addend)
+{
+  bcd[BCDLAST] += addend;
+  bcdfixup(bcd);
+}
+
+void
+bcdmult(unsigned char bcd[BCDSIZE], int multiplicand)
+{
+  int i;
+
+  for (i = 0; i <= BCDLAST; i++) {
+    bcd[i] *= multiplicand;
+  }
+  bcdfixup(bcd);
+}
+
+void
+bcdprint(unsigned char bcd[BCDSIZE])
+{
+  int i, force = 0;
+
+  for (i = 0; i <= BCDLAST; i++) {
+    if (bcd[i] || force) {
+      printf("%d", bcd[i]);
+      force = 1;
+    }
+  }
+  if (force == 0) {
+    printf("0");
+  }
+}
+
+
 void
 sdouble(double x)
 {
   unsigned char *p = (char *)&x;
-  int sign, exp;
+  int sign, exp, i, j;
+  unsigned char bcd[BCDSIZE], mantissa[BCNSIZE];
 
   if ((p[7]&0x80) != 0) {
     sign = 1;
@@ -89,6 +186,29 @@ sdouble(double x)
   }
 
   exp = ((p[7]&0x7f)<<4) | ((p[6]&0xf0)>>4);
+  exp -= 0x3ff;
+
+  char2bcn(p, mantissa);
+
+  bzero(bcd, sizeof bcd);
+  if (exp > 0) {
+    bcdadd(bcd, 1);
+  }
+
+
+  i = exp;
+  j = 0;
+  while (i > 0) {
+    bcdmult(bcd, 2);
+    if (bcnbit(mantissa, j)) {
+      bcdadd(bcd, 1);
+    }
+    j++;
+    i--;
+  }
+
+  bcdprint(bcd);
+  printf("\n");
 
   printf("%s", sign? "-" : "");
   printf("1.");
