@@ -56,6 +56,15 @@ bprintf(unsigned char c, int bits, int force)
   }
 }
 
+void
+xprintf(unsigned char c, int nibbles, int force)
+{
+  if (c || force) {
+    printf("%0*x", nibbles, c);
+  }
+}
+
+
 int
 anyon(unsigned char *p, int num)
 {
@@ -87,6 +96,12 @@ sdouble(double x)
   bprintf(p[5], 8, anyon(p, 5)); bprintf(p[4], 8, anyon(p, 4));
   bprintf(p[3], 8, anyon(p, 3)); bprintf(p[2], 8, anyon(p, 2));
   bprintf(p[1], 8, anyon(p, 1)); bprintf(p[0], 8, 0);
+  printf(" ");
+  printf("1.");
+  xprintf(p[6]&0x0f, 1, anyon(p, 6));
+  xprintf(p[5], 2, anyon(p, 5)); xprintf(p[4], 2, anyon(p, 4));
+  xprintf(p[3], 2, anyon(p, 3)); xprintf(p[2], 2, anyon(p, 2));
+  xprintf(p[1], 2, anyon(p, 1)); xprintf(p[0], 2, 0);
   printf("*2^%d", exp - 0x3ff);
 }
 
