@@ -18,6 +18,7 @@ int geometric(int argc, char *argv[]);
 int normal(int argc, char *argv[]);
 int pareto(int argc, char *argv[]);
 int poisson(int argc, char *argv[]);
+int uniform(int argc, char *argv[]);
 
 struct distributions {
   distproc_t proc;
@@ -29,6 +30,7 @@ struct distributions {
   { normal, "normal", "[MEAN (0.0)] [STDDEV (1.0)" },
   { pareto, "pareto", "[LOCATION (1.0)] [SHAPE (1.0)]" },
   { poisson, "poisson", "[MEAN (1.0)]" },
+  { uniform, "uniform", "[LOWER (0) UPPER (1)]" },
 };
 
 int iterations;			/* number of iterations */
@@ -230,6 +232,39 @@ poisson(int argc, char *argv[])
       }
     }
   }
+  return 0;
+}
+
+
+int
+uniform(int argc, char *argv[])
+{
+  double a, b, len, ans;
+
+  a = 0.0;
+  b = 1.0;
+
+  if (argc > 0) {
+    if (argc != 2) {
+      fprintf(stderr,
+	      "uniform must have no parameters or exactly two parameters\n");
+      return 1;
+    }
+    a = atof(argv[0]);
+    b = atof(argv[1]);
+    if (b <= a) {
+      fprintf(stderr, "invalid LOWER %g UPPER %g; must be LOWER < UPPER\n",
+	      a, b);
+      return 1;
+    }
+  }
+
+  len = b-a;
+  while (iterations--) {
+    ans = a + (len*unitrectangular());
+    printf("%g\n", ans);
+  }
+
   return 0;
 }
 
