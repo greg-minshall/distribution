@@ -198,7 +198,6 @@ xdouble(double x)
       zeroes++;
     }
   }
-  printf("\n");
 }
 
 
@@ -266,9 +265,11 @@ main(int argc, char *argv[])
     if (fgets(str, sizeof str, stdin) == NULL) {
       return 0;
     }
-    x = atof(str);
+    x = strtod(str, 0);
     xdouble(x);
-    printf(" ");
+    printf(" for %e\n", x);
+    xdouble(1.0-x);
+    printf(" for %e\n", 1.0-x);
     sdouble(x);
     printf(" for %e\n", x);
   }
