@@ -336,6 +336,12 @@ static int poisson(distr_p distr,
         while (1) {
             i++;
             partial = (lambda * partial) / i;
+            if (partial == 0.0) {
+                /* prevent an infinite loop */
+                fprintf(stderr, "%s: mean %g too high (underflow occurred)\n",
+                        argv[0], lambda);
+                return 1;
+            }
             sum = sum+partial;
             if (r < sum) {
                 valuecb(cookie, i*1.0);
