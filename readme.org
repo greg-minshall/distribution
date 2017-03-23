@@ -1,0 +1,26 @@
+* distributions -- generate various distributions.
+
+distributions is a simple command line tool that allows you to
+generate various 
+
+#+BEGIN_EXAMPLE
+usage: ./distribution [-h] [-i ITERATIONS] [-s SEED] DISTRIBUTION PARAMETERS
+#+END_EXAMPLE
+
+to see what distributions are available, the parameters (and defaults)
+for each disribution:
+
+#+BEGIN_EXAMPLE
+% ./distribution -h
+Distributions:
+        exponential [MEAN (1.0)]
+        geometric [PROBABILITY (0.5)]
+        normal [MEAN (0.0)] [STDDEV (1.0)
+        pareto [LOCATION (1.0)] [SHAPE (1.0)]
+        poisson [MEAN (1.0)]
+        uniform [LOWER (0) UPPER (1)]
+#+END_EXAMPLE
+
+``-s'' allows you to get repeatability by specifying an initial seed.
+
+``-i'' allow you to get that many iterates.
